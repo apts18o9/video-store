@@ -1,16 +1,16 @@
 import { v2 as cloudinary, UploadApiErrorResponse } from 'cloudinary';
 import { NextRequest, NextResponse } from 'next/server';
 import {auth} from "@clerk/nextjs/server"
-import { resolve } from 'path';
 
-require('dotenv').config(); 
+
+
 
 
 // Configuration
 cloudinary.config({ 
-    cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_NAME, 
-    api_key: process.env.CLOUDINARY_API_KEY, 
-    api_secret: process.env.CLOUDINARY_API_SECRET // Click 'View API Keys' above to copy your API secret
+    cloud_name: process.env. NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME , 
+    api_key: process.env.CLOUDNINARY_API_KEY, 
+    api_secret: process.env.CLOUDNINARY_API_SECRET  // Click 'View API Keys' above to copy your API secret
 });
 
 
@@ -21,7 +21,7 @@ interface CloudinaryUploadResult{
 
 
 export async function POST(request: NextRequest){
-    const {userId} = auth();
+    const {userId} = await auth();
 
     if(!userId){
         return NextResponse.json({error: "unauthorized"}, {status: 401});

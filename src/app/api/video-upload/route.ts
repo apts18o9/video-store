@@ -8,9 +8,9 @@ const prisma = new PrismaClient()
 
 // Configuration
 cloudinary.config({
-    cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET // Click 'View Credentials' below to copy your API secret
+    cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ,
+    api_key: process.env.CLOUDNINARY_API_KEY ,
+    api_secret: process.env.CLOUDNINARY_API_SECRET // Click 'View Credentials' below to copy your API secret
 });
 
 interface CloudinaryUploadResult {
@@ -25,21 +25,20 @@ export async function POST(request: NextRequest) {
 
     try {
 
-        const {userId} = auth();
-
-        if(!userId){
-            return NextResponse.json({error: "unauthorized"}, {status: 401});
-        }
+        //todo to check user
 
     if(
         !process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ||
         !process.env.CLOUDINARY_API_KEY ||
         !process.env.CLOUDINARY_API_SECRET
-    ){
+    )
         return NextResponse.json({error: "Cloudinary credentials not found"}, {status: 500})
-    }
+    
 
+        console.log("credentials not found");
+        
 
+    
         const formData = await request.formData();
         const file = formData.get("file") as File | null;
         const title = formData.get("title") as string;
@@ -85,7 +84,7 @@ export async function POST(request: NextRequest) {
 
     } catch (error) {
         console.log("UPload video failed", error)
-        return NextResponse.json({error: "UPload video failed"}, {status: 500})
+        return NextResponse.json({error: "Upload video failed"}, {status: 500})
     } finally{
         await prisma.$disconnect()
     }
