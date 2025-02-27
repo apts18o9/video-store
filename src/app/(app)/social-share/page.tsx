@@ -54,7 +54,7 @@ const socialFormats = {
             setIsUploading(false);
         }
         console.log(process.env. NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME);
-        
+      
     };
 
     const handleDownload = () => {

@@ -15,7 +15,7 @@ datasource db {
 
 
 model video{
-  id String @id @default(cuid())
+  id String @id @default(cuid()) //primary key
   title String 
   description String?
   publicId String

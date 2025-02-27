@@ -1,5 +1,5 @@
 "use client"
-import React, {useState, useEffect, useCallback} from 'react'
+import React, {useState, useEffect, useCallback, useRef} from 'react'
 import axios from 'axios'
 import VideoCard from '../../../../components/VideoCard'
 import { Video } from '../../../../types'
@@ -9,6 +9,8 @@ function Home() {
     const [videos, setVideos] = useState<Video[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
+    const videoRef = useRef<HTMLVideoElement>(null);
+    const [videoTitle, setVideoTitle] = React.useState("My Video");
 
     const fetchVideos = useCallback(async () => {
         try {
@@ -33,18 +35,61 @@ function Home() {
     }, [fetchVideos])
 
     const handleDownload = useCallback((url: string, title: string) => {
-        () => {
+    fetch(url)
+        .then(response => response.blob())
+        .then(blob => {
+            const fileUrl = window.URL.createObjectURL(new Blob([blob]));
             const link = document.createElement("a");
-            link.href = url;
-            link.setAttribute("download", `${title}.mp4`);
-            link.setAttribute("target", "_blank");
+            link.href = fileUrl;
+            link.download = `${title}.mp4`;
+            link.target = "_self"; // This might not prevent new tab opening
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+            window.URL.revokeObjectURL(fileUrl);
+        })
+        .catch(error => {
+            console.error("Error fetching the file:", error);
+        });
+}, []);
 
+  
+  
+
+
+    const handleDeleteVideo = useCallback(async (videoId: string) => {
+      try {
+        const deltedVideo = videos.find(video => video.id === videoId)
+        if(deltedVideo){
+          const response = await fetch("/api/video-delete", {
+            method: "DELETE",
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ id: videoId })
+          });
+
+          if (!response.ok) {
+              throw new Error("Failed to delete video");
+          }
+
+          const data = await response.json();
+          alert(`Video ${deltedVideo.title} deleted successfully`)
+          setVideos(videos.filter(video => video.id !== videoId));
+        }else{
+          console.log("video not found");
+          
         }
+          
+          
+      } catch (error) {
+          console.error("Error deleting video:", error);
+      }
+    }, [videos]);
 
-    }, [])
+
+
+
 
     if(loading){
         return <div>Loading...</div>
@@ -65,18 +110,15 @@ function Home() {
                         key={video.id}
                         video={video}
                         onDownload={handleDownload}
+                        onDelete={handleDeleteVideo}
                     />
                 ))
+                
               }
             </div>
           )}
 
-         
-          
         </div>
-
-     
-
 
           
       );
