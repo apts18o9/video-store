@@ -12,7 +12,7 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
-
+//removed migrations 
 
 model video{
   id String @id @default(cuid()) //primary key
