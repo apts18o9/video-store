@@ -49,5 +49,5 @@ prisma/migrations
 eslintconfig.mjs
 next.config.ts
 package-lock.json
-package.json
+
 postcss.config.mjs
