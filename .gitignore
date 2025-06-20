@@ -48,6 +48,6 @@ next-env.d.ts
 prisma/migrations
 eslintconfig.mjs
 next.config.ts
-package-lock.json
+
 
 postcss.config.mjs
