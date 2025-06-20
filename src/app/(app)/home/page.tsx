@@ -100,7 +100,7 @@ function Home() {
           <h1 className="text-2xl font-bold mb-4">Videos</h1>
           {videos.length === 0 ? (
             <div className="text-center text-lg text-gray-500">
-              No videos available
+              No videos available, please upload a new video
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
