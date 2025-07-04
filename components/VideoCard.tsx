@@ -1,12 +1,13 @@
+"use client"
 import React, { useState, useEffect, useCallback } from 'react';
 import { getCldImageUrl, getCldVideoUrl } from "next-cloudinary";
 import { Download, Clock, FileDown, FileUp, Delete } from "lucide-react";
 import dayjs from 'dayjs';
-import realtiveTime from "dayjs/plugin/relativeTime"
+import relativeTime from "dayjs/plugin/relativeTime"
 import { filesize } from "filesize"
 import { Video } from '../types';
 
-dayjs.extend(realtiveTime)
+dayjs.extend(relativeTime)
 
 interface VideoCardProps {
     video: Video;
@@ -17,6 +18,7 @@ interface VideoCardProps {
 const VideoCard: React.FC<VideoCardProps> = ({ video, onDownload, onDelete }) => {
     const [isHovered, setIsHovered] = useState(false)
     const [previewError, setPreviewError] = useState(false)
+    const [isVideoLoading, setIsVideoLoading] = useState(false); // New state for video loading
 
     const getThumbnailUrl = useCallback((publicId: string) => {
         return getCldImageUrl({
@@ -44,7 +46,7 @@ const VideoCard: React.FC<VideoCardProps> = ({ video, onDownload, onDelete }) =>
             src: publicId,
             width: 400,
             height: 225,
-            rawTransformations: ["e_preview:duration_15:max_seg_9:min_seg_dur_1"]
+            rawTransformations: ["e_preview:duration_15:max_seg_9:min_seg_dur_1", "f_mp4", "q_auto"]
         })
     }, [])
 
@@ -53,7 +55,7 @@ const VideoCard: React.FC<VideoCardProps> = ({ video, onDownload, onDelete }) =>
     }, [])
 
     const formatDuration = useCallback((seconds: number) => {
-        if (isNaN(seconds)) return "Unknown";
+        if (isNaN(seconds) || seconds < 0) return "Unknown";
         const minutes = Math.floor(seconds / 60);
         const remainingSeconds = Math.round(seconds % 60);
         return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
@@ -64,50 +66,69 @@ const VideoCard: React.FC<VideoCardProps> = ({ video, onDownload, onDelete }) =>
     );
 
     useEffect(() => {
-        setPreviewError(false);
+        if (!isHovered) {
+            setPreviewError(false);
+            setIsVideoLoading(false);
+        } else {
+            setIsVideoLoading(true);
+        }
     }, [isHovered]);
+
+    const handlePreviewLoad = () => {
+        setIsVideoLoading(false);
+    };
 
     const handlePreviewError = () => {
         setPreviewError(true);
+        setIsVideoLoading(false);
     };
 
-    const handleDownload = () => {
+    const handleDownloadClick = () => {
         try {
             onDownload(getFullVideoUrl(video.publicId), video.title);
         } catch (error) {
-            console.error("Error downloading video:", error);
+            console.error("Error initiating download:", error);
         }
     };
 
-    const handleDelete = () => {
+    const handleDeleteClick = () => {
         try {
             onDelete(video.id);
         } catch (error) {
-            console.error("Error deleting video:", error);
+            console.error("Error initiating delete:", error);
         }
     };
 
     return (
         <div
-            className="card bg-base-100 shadow-xl hover:shadow-2xl transition-all duration-300"
+            className="card bg-base-100 shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden relative"
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
         >
-            <figure className="aspect-video relative">
+            <figure className="aspect-video relative w-full bg-gray-900 flex items-center justify-center">
                 {isHovered ? (
                     previewError ? (
-                        <div className="w-full h-full flex items-center justify-center bg-gray-200">
+                        <div className="absolute inset-0 flex items-center justify-center bg-gray-200">
                             <p className="text-red-500">Preview not available</p>
                         </div>
                     ) : (
-                        <video
-                            src={getPreviewVideoUrl(video.publicId)}
-                            autoPlay
-                            muted
-                            loop
-                            className="w-full h-full object-cover"
-                            onError={handlePreviewError}
-                        />
+                        <>
+                            {isVideoLoading && (
+                                <div className="absolute inset-0 flex items-center justify-center bg-gray-700 bg-opacity-70 text-white">
+                                    Loading preview...
+                                </div>
+                            )}
+                            <video
+                                src={getPreviewVideoUrl(video.publicId)}
+                                autoPlay
+                                muted
+                                loop
+                                playsInline
+                                className={`w-full h-full object-cover transition-opacity duration-300 ${isVideoLoading ? 'opacity-0' : 'opacity-100'}`}
+                                onLoadedData={handlePreviewLoad}
+                                onError={handlePreviewError}
+                            />
+                        </>
                     )
                 ) : (
                     <img
@@ -123,7 +144,7 @@ const VideoCard: React.FC<VideoCardProps> = ({ video, onDownload, onDelete }) =>
             </figure>
             <div className="card-body p-4">
                 <h2 className="card-title text-lg font-bold">{video.title}</h2>
-                <p className="text-sm text-base-content opacity-70 mb-4">
+                <p className="text-sm text-base-content opacity-70 mb-4 line-clamp-2">
                     {video.description}
                 </p>
                 <p className="text-sm text-base-content opacity-70 mb-4">
@@ -146,23 +167,25 @@ const VideoCard: React.FC<VideoCardProps> = ({ video, onDownload, onDelete }) =>
                     </div>
                 </div>
                 <div className="flex justify-between items-center mt-4">
-                    <div className="text-sm font-semibold">
+                    <div className="text-sm font-semibold mr-10">
                         Compression:{" "}
                         <span className="text-accent">{compressionPercentage}%</span>
                     </div>
-                    <button
-                        className="btn btn-primary btn-sm mr-60"
-                        onClick={handleDownload}
-                    >
-                        <Download size={16} />
-                    </button>
-        
-                    <button
-                        className="btn btn-primary btn-sm"
-                        onClick={handleDelete}
-                    >
-                        <Delete size={16} />
-                    </button>
+                   
+                    <div className="flex items-center "> 
+                        <button
+                            className="btn btn-primary btn-sm mr-10"
+                            onClick={handleDownloadClick}
+                        >
+                            <Download size={16} />
+                        </button>
+                        <button
+                            className="btn btn-primary btn-sm"
+                            onClick={handleDeleteClick}
+                        >
+                            <Delete size={16} />
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
