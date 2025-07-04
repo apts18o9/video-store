@@ -48,7 +48,7 @@ export default function AppLayout({
         onChange={() => setSidebarOpen(!sidebarOpen)}
       />
       <div className="drawer-content flex flex-col">
-        {/* Navbar */}
+      
         <header className="w-full bg-base-200">
           <div className="navbar max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex-none lg:hidden">
@@ -62,11 +62,12 @@ export default function AppLayout({
             <div className="flex-1">
               <Link href="/" onClick={handleLogoClick}>
                 <div className="btn btn-ghost normal-case text-2xl font-bold tracking-tight cursor-pointer">
-                  Cloudinary Showcase
+                  Video Store
                 </div>
               </Link>
             </div>
             <div className="flex-none flex items-center space-x-4">
+              <p>Hello </p>
               {user && (
                 <>
                   <div className="avatar">
