@@ -53,9 +53,6 @@ function Home() {
         });
 }, []);
 
-  
-  
-
 
     const handleDeleteVideo = useCallback(async (videoId: string) => {
       try {
@@ -86,9 +83,6 @@ function Home() {
           console.error("Error deleting video:", error);
       }
     }, [videos]);
-
-
-
 
 
     if(loading){
